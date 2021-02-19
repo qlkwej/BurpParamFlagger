@@ -5,10 +5,200 @@ from array import array
 import sys
 
 
-ssrfParamChecks = ["icon_url","url","uri","authorization_url","redirect_uri","redirect_url","redirect","referrer","origin","location","return_url","link","starturl","return","preview","previewurl","preview_url","loc","path","template","forward","goto","fetch","domain","check","dest","continue","next","site","html","callback","returnto","return_to","feed","host","to","out","view","show","open","viewurl","go","fromurl","from","from_url","fromuri","from_uri","redir","website","profileurl","profile_url","icon","avatar","targeturl","target_url","start","baseurl","oembed"]
-lfiParamChecks = ["samplefile","file","html_file","src","source","upload","download","content","template","attachment","image","path","page","location","loc","include","dir","document","folder","root","pg","p","style","pdf","php_path","doc","icon","directory"]
-fileExtensions = [".js", ".svg", ".jpeg", ".jpg", ".csv", ".xml", ".html", ".php", ".asp", ".aspx", ".png", ".ico", ".json", ".pdf", ".css", ".jsp", ".zip", ".gz", ".swf", ".woff"]
-webRef = ["https", "http", "www"]
+ssrfParamChecks = ["icon_url",
+					"url",
+					"uri",
+					"authorization_url",
+					"redirect_uri",
+					"redirect_url",
+					"redirect",
+					"referrer",
+					"origin",
+					"location",
+					"return_url",
+					"link",
+					"starturl",
+					"return",
+					"preview",
+					"previewurl",
+					"preview_url",
+					"loc",
+					"path",
+					"template",
+					"forward",
+					"goto",
+					"fetch",
+					"domain",
+					"check",
+					"dest",
+					"continue",
+					"next",
+					"site",
+					"html",
+					"callback",
+					"returnto",
+					"return_to",
+					"feed",
+					"host",
+					"to",
+					"out",
+					"view",
+					"show",
+					"open",
+					"viewurl",
+					"go",
+					"fromurl",
+					"from",
+					"from_url",
+					"fromuri",
+					"from_uri",
+					"redir",
+					"website",
+					"profileurl",
+					"profile_url",
+					"icon",
+					"avatar",
+					"targeturl",
+					"target_url",
+					"start",
+					"baseurl",
+					"oembed"]
+
+lfiParamChecks = ["samplefile",
+				"file",
+				"html_file",
+				"src",
+				"source",
+				"upload",
+				"download",
+				"content",
+				"template",
+				"attachment",
+				"image",
+				"path",
+				"page",
+				"location",
+				"loc",
+				"include",
+				"dir",
+				"document",
+				"folder",
+				"root",
+				"pg",
+				"p",
+				"style",
+				"pdf",
+				"php_path",
+				"doc",
+				"icon",
+				"directory"]
+
+fileExtensions = [".js",
+				".svg",
+				".jpeg",
+				".jpg",
+				".csv",
+				".xml",
+				".html",
+				".php",
+				".asp",
+				".aspx",
+				".png",
+				".ico",
+				".json",
+				".pdf",
+				".css",
+				".jsp",
+				".zip",
+				".gz",
+				".swf",
+				".woff"]
+
+# the payload from https://github.com/lutfumertceylan/top25-parameter (top 25 parameters)
+rceParamChecks = ["cmd",
+				"exec",
+				"command",
+				"execute",
+				"ping",
+				"query",
+				"jump",
+				"code",
+				"reg",
+				"do",
+				"func",
+				"arg",
+				"option",
+				"load",
+				"process",
+				"step",
+				"read",
+				"function",
+				"req",
+				"feature",
+				"exe",
+				"module",
+				"payload",
+				"run",
+				"text",
+				"print"]
+
+# the payload from https://github.com/lutfumertceylan/top25-parameter (top 25 parameters)
+openRedirectParamChecks = ["next",
+				"url",
+				"target",
+				"rurl",
+				"dest",
+				"destination",
+				"redir",
+				"redirect_uri",
+				"redirect_url",
+				"redirect",
+				"/redirect/",
+				"/cgi-bin/redirect.cgi?",
+				"/out/",
+				"/out?",
+				"view",
+				"/login?to",
+				"image_url",
+				"go",
+				"return",
+				"returnTo",
+				"return_to",
+				"checkout_url",
+				"continue",
+				"return_path"]
+
+# the payload from https://github.com/lutfumertceylan/top25-parameter (top 25 parameters)
+xssParamChecks = ["q",
+				"s",
+				"search",
+				"id",
+				"lang",
+				"keyword",
+				"query",
+				"page",
+				"keywords",
+				"year",
+				"view",
+				"email",
+				"type",
+				"name",
+				"p",
+				"month",
+				"immagine",
+				"list_type",
+				"url",
+				"terms",
+				"categoryid",
+				"key",
+				"l",
+				"begindate",
+				"enddate"]
+
+webRef = ["https",
+ "http",
+ "www"]
+
 
 class BurpExtender(IBurpExtender, IScannerCheck):
 
@@ -40,6 +230,21 @@ class BurpExtender(IBurpExtender, IScannerCheck):
 				if "LFI" not in findings.keys():
 					findings["LFI"] = []
 				findings["LFI"].append(name)
+    
+			if name.lower() in rceParamChecks or "_" + name.lower() in rceParamChecks or value.lower().endswith(tuple(fileExtensions)):
+				if "RCE" not in findings.keys():
+					findings["RCE"] = []
+				findings["RCE"].append(name)
+    
+			if name.lower() in xssParamChecks or "_" + name.lower() in xssParamChecks or value.lower().endswith(tuple(fileExtensions)):
+				if "XSS" not in findings.keys():
+					findings["XSS"] = []
+				findings["XSS"].append(name)
+    
+			if name.lower() in openRedirectParamChecks or "_" + name.lower() in openRedirectParamChecks or value.lower().endswith(tuple(fileExtensions)):
+				if "OPEN_REDIRECT" not in findings.keys():
+					findings["OPEN_REDIRECT"] = []
+				findings["OPEN_REDIRECT"].append(name)
 
 		return findings
 
